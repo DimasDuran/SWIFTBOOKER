@@ -1,70 +1,193 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import SearchBar from '@/components/SearcBar'; 
+import { ref, onValue, getDatabase } from "firebase/database";
+import parseContentData from '@/utils/parseContentData';
+import CardAppointmentSmall from '@/components/CardAppoimentSmall';
+import { sortAppointmentsByDateAndTime } from '@/utils/calendarUtils';
+import categories from '@/utils/categories';
+import CardCarousel from '@/components/CardCarousel';
+import Category from '@/components/Category';
+import useAuth from '@/hooks/useAuth';
+import { colors } from '@/styles/colores'; 
+import { getAuth, inMemoryPersistence } from "firebase/auth";
+import fetchServiceInfo from '@/utils/fetchServiceInfo';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 
-export default function HomeScreen() {
+interface UserInfo {
+  id: number;
+  firstname: string;
+  lastname: string;
+  district: string;
+}
+
+export default function Index() {
+  const [appointmentList, setAppointmentList] = useState<any[]>([]);
+  const [userAuth, setUserAuth] = useState<boolean | null>(null);
+  const [isReady, setIsReady] = useState<boolean>(false);
+
+  const auth = getAuth();
+  const user = auth.currentUser;
+  const { getToken} = useAuth();
+
+  useEffect(() => {
+    const handleToken = async () => {
+      const token = await getToken();
+      console.log('Token from home', token);
+    };
+
+    handleToken();
+
+    const unsubscribe = auth.onAuthStateChanged((userAuth) => {
+      setUserAuth(!!userAuth);
+    });
+
+    return () => unsubscribe();
+  }, [getToken]);
+
+  useEffect(() => {
+    if (userAuth && user) {
+      const dbRef = ref(getDatabase(), "userAppointments/" + user.uid);
+
+      const unsubscribe = onValue(dbRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const getList = parseContentData(snapshot.val());
+
+          const servicePromises = getList.map((appointment) =>
+            fetchServiceInfo(appointment.serviceId)
+          );
+
+          Promise.all(servicePromises)
+            .then((serviceInfos) => {
+              const updateAppointmentList = getList.map(
+                (appointment, index) => ({
+                  ...appointment,
+                  serviceInfo: serviceInfos[index],
+                })
+              );
+
+              setAppointmentList(
+                sortAppointmentsByDateAndTime(updateAppointmentList)
+              );
+              setIsReady(true);
+            });
+        } else {
+          setAppointmentList([]);
+          setIsReady(true);
+        }
+      });
+
+      return () => unsubscribe();
+    } else {
+      setAppointmentList([]);
+      setTimeout(() => {
+        setIsReady(true);
+      }, 2000);
+    }
+  }, [userAuth, user]);
+
+  // Navigation handlers
+  function goToCalendar() {
+    // navigation.navigate("CalendarScreen");
+  }
+
+  function goToNotifications() {
+    // navigation.navigate("NotificationsScreen");
+  }
+
+  const handleSearch = () => {
+    // navigation.navigate("SearchScreen");
+  };
+
+  const handleCategorySelect = (selectedCategory: any) => {
+    // navigation.navigate("SearchScreen", { category: selectedCategory });
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text>Index</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    marginTop: 48,
+    marginBottom: 120,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  top_container: {
+    paddingHorizontal: 24,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  card_container: {
+    marginVertical: 16,
+    padding: 16,
+  },
+  header_container: {
+    marginVertical: 16,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  welcome_container: {
+    marginTop: 8,
+    marginBottom: 64,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  search_container: {
+    flex: 1,
+    paddingBottom: 8,
+  },
+  app_container: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  list_container: {
+    flex: 1,
+    marginVertical: 8,
+  },
+  category_container: {
+    marginVertical: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  header_text: {
+    fontSize: 34,
+    fontFamily: "Mulish-Medium",
+    color: colors.color_primary,
+    flex: 1,
+  },
+  welcome_text: {
+    paddingHorizontal: 8,
+    fontSize: 24,
+    color: colors.color_white,
+    fontFamily: "Mulish-Medium",
+  },
+  text: {
+    flex: 1,
+    fontSize: 18,
+    fontFamily: "Mulish-Medium",
+  },
+  detail_text: {
+    flex: 1,
+    flexWrap: "wrap",
+    fontSize: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    color: colors.color_white,
+    fontFamily: "Mulish-Medium",
+  },
+  welcome_text_bold: {
+    color: colors.color_white,
+    fontSize: 24,
+    fontFamily: "Mulish-Bold",
+  },
+  icon: {
+    color: colors.color_primary,
+  },
+  loading_container: {
+    alignContent: "center",
+    justifyContent: "center",
+    height: "100%",
   },
 });
