@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     fontFamily: "Mulish-Bold",
   },
   icon: {
-    color: colors.color_primary,
+    color: '#6A5ACD',
   },
   loading_container: {
     alignContent: "center",
