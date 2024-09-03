@@ -4,13 +4,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface UseAuth {
     user: User | null;
+    uid: string | null;
     token: string | null;
-    getToken: () => Promise<string | null>; // Add for to get token
+    email: string | null; // Añadido campo para el email
+    getToken: () => Promise<string | null>; 
 }
 
 const useAuth = (): UseAuth => {
     const [user, setUser] = useState<User | null>(null);
+    const [uid, setUid] = useState<string | null>(null);
     const [token, setToken] = useState<string | null>(null);
+    const [email, setEmail] = useState<string | null>(null); // Estado para email
     const auth: Auth = getAuth();
 
     useEffect(() => {
@@ -18,11 +22,15 @@ const useAuth = (): UseAuth => {
             if (user) {
                 const userToken = await user.getIdToken();
                 setUser(user);
+                setUid(user.uid);
                 setToken(userToken);
+                setEmail(user.email); // Set email
                 await AsyncStorage.setItem('userToken', userToken);
             } else {
                 setUser(null);
+                setUid(null);
                 setToken(null);
+                setEmail(null); // Clear email
                 await AsyncStorage.removeItem('userToken');
             }
         });
@@ -34,7 +42,7 @@ const useAuth = (): UseAuth => {
         return token;
     };
 
-    return { user, token, getToken }; 
+    return { user, uid, token, email, getToken }; // Añadido email
 };
 
 export default useAuth;

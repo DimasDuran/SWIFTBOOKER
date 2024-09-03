@@ -1,53 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import SearchBar from '@/components/SearcBar'; 
-import { ref, onValue, getDatabase } from "firebase/database";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  ImageBackground,
+} from 'react-native';
+import { ref, onValue, getDatabase } from 'firebase/database';
 import parseContentData from '@/utils/parseContentData';
-import CardAppointmentSmall from '@/components/CardAppoimentSmall';
 import { sortAppointmentsByDateAndTime } from '@/utils/calendarUtils';
-import categories from '@/utils/categories';
-import CardCarousel from '@/components/CardCarousel';
-import Category from '@/components/Category';
 import useAuth from '@/hooks/useAuth';
-import { colors } from '@/styles/colores'; 
-import { getAuth, inMemoryPersistence } from "firebase/auth";
 import fetchServiceInfo from '@/utils/fetchServiceInfo';
-
-
-interface UserInfo {
-  id: number;
-  firstname: string;
-  lastname: string;
-  district: string;
-}
+import { colors } from '@/styles/colores';
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from 'expo-router';
+import SearchBar from "@/components/SearcBar";
+import CardAppointmentSmall from '@/components/CardAppoimentSmall';
+import CardCarousel from '@/components/CardCarousel';
+import categories from "@/utils/categories";
+import Category from '@/components/Category';
 
 export default function Index() {
   const [appointmentList, setAppointmentList] = useState<any[]>([]);
-  const [userAuth, setUserAuth] = useState<boolean | null>(null);
   const [isReady, setIsReady] = useState<boolean>(false);
-
-  const auth = getAuth();
-  const user = auth.currentUser;
-  const { getToken} = useAuth();
-
-  useEffect(() => {
-    const handleToken = async () => {
-      const token = await getToken();
-      console.log('Token from home', token);
-    };
-
-    handleToken();
-
-    const unsubscribe = auth.onAuthStateChanged((userAuth) => {
-      setUserAuth(!!userAuth);
-    });
-
-    return () => unsubscribe();
-  }, [getToken]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { token,uid,email } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    if (userAuth && user) {
-      const dbRef = ref(getDatabase(), "userAppointments/" + user.uid);
+    if (email && uid) {
+      const dbRef = ref(getDatabase(), 'userAppointments/' + uid);
 
       const unsubscribe = onValue(dbRef, (snapshot) => {
         if (snapshot.exists()) {
@@ -59,12 +42,12 @@ export default function Index() {
 
           Promise.all(servicePromises)
             .then((serviceInfos) => {
-              const updateAppointmentList = getList.map(
-                (appointment, index) => ({
-                  ...appointment,
-                  serviceInfo: serviceInfos[index],
-                })
-              );
+              const updateAppointmentList = getList.map((appointment, index) => ({
+                ...appointment,
+                serviceInfo: serviceInfos[index],
+                bookedDate: appointment.bookedDate || '', 
+                bookedTime: appointment.bookedTime || '', 
+              }));
 
               setAppointmentList(
                 sortAppointmentsByDateAndTime(updateAppointmentList)
@@ -84,29 +67,120 @@ export default function Index() {
         setIsReady(true);
       }, 2000);
     }
-  }, [userAuth, user]);
-
-  // Navigation handlers
-  function goToCalendar() {
-    // navigation.navigate("CalendarScreen");
-  }
-
-  function goToNotifications() {
-    // navigation.navigate("NotificationsScreen");
-  }
+  }, [email, uid]);
 
   const handleSearch = () => {
-    // navigation.navigate("SearchScreen");
+    // router.replace("SearchScreen");
   };
 
-  const handleCategorySelect = (selectedCategory: any) => {
-    // navigation.navigate("SearchScreen", { category: selectedCategory });
+  const handleCategorySelect = (selectedCategory: string) => {
+    setSelectedCategory(selectedCategory);
+    // router.replace("SearchScreen", { category: selectedCategory });
   };
+
+  //NAVIGATION
+  function goToCalendar() {
+    // router.replace("CalendarScreen");
+  }
+
+  //NAVIGATION
+  function goToNotifications() {
+    // router.replace("NotificationsScreen");
+  }
+
+  console.log(appointmentList);
+  console.log(email);
 
   return (
-    <View style={styles.container}>
-      <Text>Index</Text>
-    </View>
+    <ScrollView>
+      {isReady ? (
+        <View style={styles.container}>
+          <View style={styles.top_container}>
+            <View style={styles.header_container}>
+              <Text style={styles.header_text}>SwiftBooker</Text>
+              <Feather
+                name="bell"
+                size={24}
+                style={styles.icon}
+                onPress={goToNotifications}
+              />
+            </View>
+            <ImageBackground
+              style={styles.card_container}
+              imageStyle={{ borderRadius: 20, overflow: "hidden" }}
+              source={require("@/assets/backgroundsearch.png")}
+            >
+              <View style={styles.welcome_container}>
+                <Text style={styles.welcome_text}>
+                  Welcome
+                </Text>
+                <Text style={styles.welcome_text_bold}>
+    {email ? email.split('@')[0] : ''}
+                </Text>
+              </View>
+              <Text style={styles.detail_text}>
+                Let's plan your weekly schedule together
+              </Text>
+              <View style={styles.search_container}>
+                <SearchBar
+                  placeholder_text={"Search Service"}
+                  onSearch={handleSearch}
+                />
+              </View>
+            </ImageBackground>
+          </View>
+          <View style={styles.app_container}>
+            <Text style={styles.text}>For You</Text>
+            <View>
+              <CardCarousel
+                list={categories}
+                onSelectCategory={handleCategorySelect}
+              />
+            </View>
+
+            {appointmentList.length === 0 ? (
+              ""
+            ) : (
+              <View>
+                <Text style={styles.text}>
+                  Upcoming Appointments
+                </Text>
+                <View style={styles.list_container}>
+                  {appointmentList
+                    .slice(0, 2)
+                    .map((appointment) => (
+                      <CardAppointmentSmall
+                        appointment={appointment}
+                        serviceInfo={appointment.serviceInfo}
+                        key={appointment.id}
+                        onPress={goToCalendar}
+                      />
+                    ))}
+                </View>
+              </View>
+            )}
+            <Text style={styles.text}>All Services</Text>
+            <View style={styles.category_container}>
+              {categories.map((category) => (
+                <Category
+                  category={category}
+                  key={category.name}
+                  isSelected={selectedCategory === category.name}
+                  onPress={() => handleCategorySelect(category.name)}
+                />
+              ))}
+            </View>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.loading_container}>
+          <ActivityIndicator
+            size="large"
+            color={colors.color_primary}
+          />
+        </View>
+      )}
+    </ScrollView>
   );
 }
 

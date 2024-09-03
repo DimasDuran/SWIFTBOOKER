@@ -1,39 +1,38 @@
-
 const categories = [
     {
         name: "Personal Development", 
-        icon: "md-person",
-        image: require("../../assets/illustration/growth.png"),
+        icon: "person", // md-person en Ionicons se puede usar simplemente como "person"
+        image: require("@/assets/illustration/growth.png"),
         count: 240,
     },
     {
         name: "Sports", 
-        icon: "md-fitness",
-        image: require("../../assets/illustration/sport.png"),
+        icon: "fitness", // md-fitness en Ionicons se puede usar como "fitness"
+        image: require("@/assets/illustration/sport.png"),
         count: 200,
     },
     {
         name: "Health", 
-        icon: "md-medical",
-        image: require("../../assets/illustration/healthcare.png"),
+        icon: "medkit", // md-medical en Ionicons se usa como "medkit"
+        image: require("@/assets/illustration/healthcare.png"),
         count: 150,
     },
     {
         name: "Education",
-        icon: "md-school",
-        image: require("../../assets/illustration/education.png"),
+        icon: "school", // md-school en Ionicons se usa como "school"
+        image: require("@/assets/illustration/education.png"),
         count: 250,
     },
     {
         name: "Beauty", 
-        icon: "md-flower",
-        image: require("../../assets/illustration/beauty.png"),
+        icon: "flower", // md-flower en Ionicons se usa como "flower"
+        image: require("@/assets/illustration/beauty.png"),
         count: 100,
     },
     {
         name: "Other", 
-        icon: "md-apps-sharp",
-        image: require("../../assets/illustration/other.png"),
+        icon: "apps", // md-apps-sharp en Ionicons se puede usar como "apps"
+        image: require("@/assets/illustration/other.png"),
         count: 100,
     },
 ];
