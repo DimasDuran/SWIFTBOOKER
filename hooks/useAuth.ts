@@ -42,7 +42,7 @@ const useAuth = (): UseAuth => {
         return token;
     };
 
-    return { user, uid, token, email, getToken }; // Añadido email
+    return { user, uid, token, email, getToken }; // add email
 };
 
 export default useAuth;
