@@ -78,7 +78,7 @@ const UserProfileScreen: React.FC<UserProfileScreenProps> = () => {
         <CardSmall iconName="message-square" text="Feedback" onSelect={() => console.log('')} />
 
         <View style={styles.logo_container}>
-          <Text style={styles.logo_text}>AppointMe</Text>
+          <Text style={styles.logo_text}>SwiftBooker</Text>
           <TouchableOpacity style={styles.logout_container} onPress={handleSignOut}>
             <Text style={styles.text}>Log Out</Text>
             <Feather style={styles.icon} name="log-out" size={24} color="black" />

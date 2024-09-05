@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { colors, sizes } from "@/styles/Theme";
 import CardAppointment from "@/components/CardAppointment";
+import HourseAnimate from '@/utils/Animate/HourseAnimate';
 import { configureNotifications } from "@/utils/NotificationService";
 import { useCalendarStore } from "@/hooks/useCalendarStore";
 import { getAuth } from "firebase/auth";
@@ -17,6 +18,7 @@ export default function CalendarScreen() {
     const auth = getAuth();
     const user = auth.currentUser;
     const { appointmentList, loading, fetchAppointments, removeAppointment } = useCalendarStore();
+    const [showAnimation, setShowAnimation] = useState(false);
 
     useEffect(() => {
         configureNotifications();
@@ -30,15 +32,15 @@ export default function CalendarScreen() {
 
     const handleCancel = (appointment: { id: string; appType: string }) => {
         Alert.alert(
-            "Cancelación de cita",
-            "Su cita será cancelada, ¿está seguro?",
+            "Cancel Appointment",
+            "Your appointment will be canceled. Are you sure?",
             [
                 {
-                    text: "Cancelar",
+                    text: "Cancel",
                     style: "cancel",
                 },
                 {
-                    text: "Eliminar",
+                    text: "Remove",
                     onPress: () => {
                         removeAppointment(user!.uid, appointment.id);
                     },
@@ -59,9 +61,15 @@ export default function CalendarScreen() {
             ) : (
                 <View style={styles.list_container}>
                     {appointmentList.length === 0 ? (
-                        <Text style={styles.emptyViewText}>
-                            ¡Dot'n have any appointment!
-                        </Text>
+                        <View style={styles.emptyView}>
+                            <View style={styles.animationContainer}>
+                                <HourseAnimate />
+                                <Text style={styles.emptyViewText}>
+                                    You don't have any appointments scheduled yet! 📅{"\n"}
+                                </Text>
+
+                            </View>
+                        </View>
                     ) : (
                         <View>
                             {appointmentList.map((appointment) => (
@@ -97,11 +105,19 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
     },
+    emptyView: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+    },
     emptyViewText: {
         fontFamily: "Mulish-Medium",
         fontSize: 24,
-        alignItems: "center",
-        marginHorizontal: 24,
+        marginTop: 60,
+        textAlign:'center'
+    },
+    animationContainer: {
+        alignItems: 'center',
     },
     loading_container: {
         position: "absolute",

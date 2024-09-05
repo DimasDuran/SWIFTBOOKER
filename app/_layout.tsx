@@ -5,8 +5,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { MenuProvider } from "react-native-popup-menu";
-
-
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -28,18 +26,27 @@ export default function RootLayout() {
     return null;
   }
 
+  
+
   return (
     <MenuProvider>
-
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
-        <Stack.Screen name="+not-found" />
-        <Stack.Screen name="stack/LoginScreen" options={{headerShown:false}} />
-        <Stack.Screen name="stack/SignUpScreen" options={{headerShown:false}} />
-
-      </Stack>
-    </ThemeProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+          <Stack.Screen name="stack/LoginScreen" options={{ headerShown: false }} />
+          <Stack.Screen name="stack/SignUpScreen" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="stack/ServiceDetailScreen"
+            options={{ headerShown: true, title: 'Details' }}
+          />
+           <Stack.Screen
+            name="stack/ServiceBookingScreen"
+            options={{ headerShown: true, title: 'Booking' }}
+          />
+          
+        </Stack>
+      </ThemeProvider>
     </MenuProvider>
   );
 }

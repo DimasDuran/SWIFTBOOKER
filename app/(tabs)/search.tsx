@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { View, FlatList, StyleSheet, ActivityIndicator } from "react-native";
 import CardMedium from "@/components/CardMedium";
-import SearchBar from "@/components/SearcBar";
+import SearchBar from "@/components/SearcBar"; // Corregido el nombre del componente
 import { getDatabase, ref, child, get } from "firebase/database";
 import { colors, sizes } from "@/styles/Theme";
 import categories from "@/utils/categories";
@@ -26,7 +26,7 @@ export default function SearchScreen() {
     } = useServiceStore();
     const [loading, setLoading] = React.useState(true);
     const router = useRouter();
-    const { category } = useGlobalSearchParams(); // Usa useSearchParams para obtener los parámetros
+    const { category } = useGlobalSearchParams();
 
     useEffect(() => {
         const dbRef = ref(getDatabase());
@@ -62,14 +62,20 @@ export default function SearchScreen() {
         }
     };
 
-    const renderService = ({ item }) => (
-        <CardMedium
-            image_source={userImages[item.id]}
+    const renderService = ({ item }) => {
+        console.log(item.id)
+        const imageSource = userImages[item.id] ? userImages[item.id] : require("@/assets/user-profile.png");
+
+        return(
+            <CardMedium
+            image_source={imageSource}
             service={item}
             key={item.id}
             onSelect={() => handleServiceSelect(item)}
+            
         />
-    );
+        )
+    }
 
     const renderCategory = ({ item }) => (
         <Category
@@ -81,13 +87,13 @@ export default function SearchScreen() {
     );
 
     const handleServiceSelect = (item) => {
-        router.push({ pathname: "ServiceDetailScreen", params: { item } });
+        router.replace({ pathname: "/stack/ServiceDetailScreen", params: { item: JSON.stringify(item) } });
     };
 
     const handleSearch = (text) => {
         searchServices(text);
     };
-
+//   console.log('============>>',serviceList)
     return (
         <View style={styles.container}>
             {loading ? (
@@ -104,7 +110,6 @@ export default function SearchScreen() {
                             placeholder_text={"Buscar"}
                         />
                     </View>
-
                     <View style={styles.category_container}>
                         <FlatList
                             horizontal
@@ -119,9 +124,9 @@ export default function SearchScreen() {
 
                     <View style={styles.list_container}>
                         <FlatList
-                            data={filteredServiceList}
+                            data={filteredServiceList} 
                             renderItem={renderService}
-                            keyExtractor={(item) => item.id.toString()}
+                            keyExtractor={(item) => item.id}
                             contentContainerStyle={{ paddingBottom: 330 }}
                         />
                     </View>

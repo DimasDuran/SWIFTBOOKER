@@ -19,7 +19,7 @@ interface CardMediumProps {
         district: string;
         skills: string[];
     };
-    image_source: any;
+    image_source: string;
     onSelect: (event: GestureResponderEvent) => void;
 }
 

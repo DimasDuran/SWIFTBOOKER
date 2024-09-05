@@ -42,7 +42,6 @@ export default {
             ...style_base.container, 
             backgroundColor: colors.color_white,
             borderColor: colors.color_primary,
-            borderWidth:2,
         }, text : {
             ...style_base.text,
             color:colors.color_primary,

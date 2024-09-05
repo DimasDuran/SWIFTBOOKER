@@ -6,7 +6,7 @@ interface UseAuth {
     user: User | null;
     uid: string | null;
     token: string | null;
-    email: string | null; // Añadido campo para el email
+    email: string | null; 
     getToken: () => Promise<string | null>; 
 }
 
@@ -14,7 +14,7 @@ const useAuth = (): UseAuth => {
     const [user, setUser] = useState<User | null>(null);
     const [uid, setUid] = useState<string | null>(null);
     const [token, setToken] = useState<string | null>(null);
-    const [email, setEmail] = useState<string | null>(null); // Estado para email
+    const [email, setEmail] = useState<string | null>(null); 
     const auth: Auth = getAuth();
 
     useEffect(() => {
@@ -24,13 +24,13 @@ const useAuth = (): UseAuth => {
                 setUser(user);
                 setUid(user.uid);
                 setToken(userToken);
-                setEmail(user.email); // Set email
+                setEmail(user.email);
                 await AsyncStorage.setItem('userToken', userToken);
             } else {
                 setUser(null);
                 setUid(null);
                 setToken(null);
-                setEmail(null); // Clear email
+                setEmail(null); 
                 await AsyncStorage.removeItem('userToken');
             }
         });
