@@ -6,6 +6,7 @@ export const colors = {
     color_light_gray: "#E0E0E0",
     color_gray: "#61677A",
     color_white: "#fff",
+    colo_blue:"#3163EB"
 };
 
 const { width, height } = Dimensions.get("window");

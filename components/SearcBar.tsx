@@ -6,22 +6,24 @@ import { Feather } from '@expo/vector-icons';
 interface SearchBarProps extends TextInputProps {
   placeholder_text: string;
   onSearch: (text: string) => void;
+  token: boolean;
+  onPress:() => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = (props) => {
+const SearchBar: React.FC<SearchBarProps> = ({ placeholder_text, onSearch,onPress, token, value, ...props }) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
 
   const handleSearchFocus = () => {
     setSearchFocused(true);
-    props.onSearch("");
+    onSearch("");
   };
 
   const handleSearchBlur = () => {
     setSearchFocused(false);
   };
-
+console.log('Valor',token)
   return (
-    <TouchableOpacity style={styles.container} activeOpacity={1}>
+    <View style={styles.container}>
       <Feather
         name='search'
         size={20}
@@ -29,15 +31,17 @@ const SearchBar: React.FC<SearchBarProps> = (props) => {
         style={styles.icon}
       />
       <TextInput
+        editable={token}
+        onPress={onPress}
         style={styles.input_line}
-        placeholder={props.placeholder_text}
-        onChangeText={props.onSearch}
+        placeholder={placeholder_text}
+        onChangeText={onSearch}
         onBlur={handleSearchBlur}
         onFocus={handleSearchFocus}
-        value={props.value}
-        {...props} // Permite pasar propiedades adicionales como `keyboardType`, `autoCapitalize`, etc.
+        value={value}
+        {...props} 
       />
-    </TouchableOpacity>
+    </View>
   );
 };
 

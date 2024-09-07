@@ -1,12 +1,15 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import useAuth from '@/hooks/useAuth';
+import { TouchableOpacity } from 'react-native';
+import DisabledTabButton from '@/components/DisabledTabButton'; 
 
-export default function TabLayout() {
+const TabLayout: React.FC = () => {
   const colorScheme = useColorScheme();
+  const { token } = useAuth();
 
   return (
     <Tabs
@@ -23,6 +26,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="search"
         options={{
@@ -30,27 +34,33 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'search' : 'search'} color={color} />
           ),
+          tabBarButton: (props) => !token ? <DisabledTabButton colorScheme={colorScheme} /> : <TouchableOpacity {...props} />,
         }}
       />
-        <Tabs.Screen
+
+      <Tabs.Screen
         name="apoiments"
         options={{
           title: '',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'calendar-clear-outline' : 'calendar-clear-outline'} color={color} />
+            <TabBarIcon name={focused ? 'calendar-outline' : 'calendar-outline'} color={color} />
           ),
+          tabBarButton: (props) => !token ? <DisabledTabButton colorScheme={colorScheme} /> : <TouchableOpacity {...props} />,
         }}
       />
-       <Tabs.Screen
+
+      <Tabs.Screen
         name="profile"
         options={{
           title: '',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'person-outline' : 'person-outline'} color={color} />
           ),
+          tabBarButton: (props) => <TouchableOpacity {...props} />, // Always enabled
         }}
       />
-
     </Tabs>
   );
 }
+
+export default TabLayout;

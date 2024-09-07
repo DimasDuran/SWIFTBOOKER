@@ -7,6 +7,7 @@ import { app } from "../../firebaseConfig";
 import { Formik, FormikHelpers } from "formik";
 import ErrorHandler, { showTopMessage } from "@/utils/ErrorHandler";
 import { useRouter } from "expo-router";
+import useAuth from "@/hooks/useAuth";
 
 interface SignUpFormValues {
     usermail: string;
@@ -23,6 +24,7 @@ const initialFormValues: SignUpFormValues = {
 const SignUpScreen: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const router = useRouter();
+    const { getToken } = useAuth(); // use getToken from the hook
 
     const handleFormSubmit = async (
         formValues: SignUpFormValues,
@@ -47,8 +49,15 @@ const SignUpScreen: React.FC = () => {
         }
 
         try {
-            await createUserWithEmailAndPassword(auth, formValues.usermail, formValues.password);
+            const userCredential = await createUserWithEmailAndPassword(auth, formValues.usermail, formValues.password);
+            const user = userCredential.user;
+            const token = await user.getIdToken(); // Ensure you get the token after registration
             showTopMessage("Registration successful!", "success");
+
+            // Optionally use getToken here if needed
+            const storedToken = await getToken();
+            console.log("Stored Token:", storedToken);
+
             router.replace('/profile');
         } catch (err: any) {
             showTopMessage(ErrorHandler(err.code), "danger");

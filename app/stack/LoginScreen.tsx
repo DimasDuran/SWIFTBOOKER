@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Button from "@/components/Button/Button";
 import InputBar from "@/components/InputBar";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { app } from "../../firebaseConfig";
 import { Formik, FormikHelpers } from "formik";
 import ErrorHandler, { showTopMessage } from "../../utils/ErrorHandler";
 import { colors } from "@/styles/colores";
 import { useRouter } from "expo-router";
-import useAuth from "@/hooks/useAuth"; 
+import useAuthStore from "@/hooks/useAuth";
 
 interface LoginFormValues {
     usermail: string;
@@ -21,29 +19,19 @@ const initialFormValues: LoginFormValues = {
 };
 
 const LoginScreen: React.FC = () => {
-    const [loading, setLoading] = useState<boolean>(false);
-    const { user, token, getToken } = useAuth(); 
+    const { login, isLoading, error } = useAuthStore(); 
     const router = useRouter();
-
     const handleFormSubmit = async (
         formValues: LoginFormValues,
         { setSubmitting }: FormikHelpers<LoginFormValues>
     ) => {
-        const auth = getAuth(app);
-        setLoading(true);
-
         try {
-            const userCredential = await signInWithEmailAndPassword(
-                auth,
-                formValues.usermail,
-                formValues.password
-            );
+            await login(formValues.usermail, formValues.password);
             showTopMessage("Login successful!", "success");
             router.replace("/profile");
         } catch (err: any) {
             showTopMessage(ErrorHandler(err.code), "danger");
         } finally {
-            setLoading(false);
             setSubmitting(false);
         }
     };
@@ -82,20 +70,30 @@ const LoginScreen: React.FC = () => {
                         <View style={styles.button_container}>
                             <View style={styles.button}>
                                 <Button
-                                    text="Iniciar Sesión"
-                                    onPress={handleSubmit} 
-                                    loading={loading}
+                                    text="Log In"
+                                    onPress={handleSubmit}
+                                    loading={isLoading} 
                                 />
                             </View>
                             <View style={styles.button}>
                                 <Button
-                                    text="Registrarse"
+                                    text="Log in with Google"
+                                    loading={null}
+                                    onPress={goToMemberSignUp}
+                                    theme="blueaway"
+                                />
+                            </View>
+                            <View style={styles.button}>
+                                <Button
+                                    text="Register"
                                     loading={null}
                                     onPress={goToMemberSignUp}
                                     theme="secondary"
                                 />
                             </View>
+                           
                         </View>
+                        {error && <Text style={{ color: 'red' }}>{error}</Text>}
                     </>
                 )}
             </Formik>

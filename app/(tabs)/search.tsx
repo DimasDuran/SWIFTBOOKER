@@ -10,6 +10,7 @@ import { showTopMessage } from "@/utils/ErrorHandler";
 import parseContentData from "@/utils/parseContentData";
 import userImages from "@/utils/UserImageUtils";
 import { useServiceStore } from "@/hooks/useServiceStore";
+import useAuthStore from "@/hooks/useAuth";
 import { useRouter, useGlobalSearchParams } from "expo-router";
 
 export default function SearchScreen() {
@@ -24,6 +25,7 @@ export default function SearchScreen() {
     const [loading, setLoading] = React.useState(true);
     const router = useRouter();
     const { category } = useGlobalSearchParams();
+    const { token } = useAuthStore();
 
     useEffect(() => {
         const dbRef = ref(getDatabase());
@@ -73,6 +75,7 @@ export default function SearchScreen() {
     const renderCategory = ({ item }) => (
         <Category
             category={item}
+            token={token}
             isSelected={selectedCategory === item.name}
             onPress={() => handleCategoryFilter(item.name)}
             key={item.name}

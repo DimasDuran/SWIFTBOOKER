@@ -20,14 +20,14 @@ interface CardCarouselProps {
         count: number;
     }>;
     onSelectCategory: (item: any) => void;
+    token:boolean
 }
 
-const CardCarousel: React.FC<CardCarouselProps> = ({ list, onSelectCategory }) => {
+const CardCarousel: React.FC<CardCarouselProps> = ({ list, onSelectCategory,token }) => {
     const av = new Animated.Value(0);
     av.addListener(() => {
         return;
     });
-
     return (
         <FlatList
             data={list}
@@ -40,6 +40,8 @@ const CardCarousel: React.FC<CardCarouselProps> = ({ list, onSelectCategory }) =
             renderItem={({ item, index }) => {
                 return (
                     <TouchableOpacity
+                       disabled={token}
+
                         style={{
                             marginLeft: index === 0 ? 0 : 24,
                             marginRight: index === list.length - 1 ? 24 : 0,
@@ -50,6 +52,8 @@ const CardCarousel: React.FC<CardCarouselProps> = ({ list, onSelectCategory }) =
                         <View style={styles.card}>
                             <View style={styles.button_box}>
                                 <TouchableOpacity
+                                disabled={token}
+
                                     style={styles.button}
                                     onPress={() => onSelectCategory(item)}
                                 >

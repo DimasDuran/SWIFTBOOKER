@@ -9,16 +9,25 @@ interface CategoryProps {
         icon: string;
     };
     isSelected: boolean;
+    token: string; // Token as a string
     onPress: () => void;
 }
 
 const windowWidth = Dimensions.get("window").width;
 
-const Category: React.FC<CategoryProps> = ({ category, isSelected, onPress }) => {
+const Category: React.FC<CategoryProps> = ({ category, isSelected, onPress, token }) => {
+    // Determine if the button is enabled or disabled based on token
+    const isDisabled = !token; // Disabled if token is empty or not present
+
     return (
         <TouchableOpacity
-            style={[styles.button, isSelected ? styles.selectedButton : null]}
-            onPress={onPress}
+            disabled={isDisabled}
+            style={[
+                styles.button,
+                isSelected ? styles.selectedButton : null,
+                isDisabled ? styles.disabledButton : null // Apply disabled style if needed
+            ]}
+            onPress={isDisabled ? undefined : onPress} // Disable onPress if button is disabled
         >
             <Ionicons
                 name={category.icon}
@@ -32,7 +41,8 @@ const Category: React.FC<CategoryProps> = ({ category, isSelected, onPress }) =>
             />
             <Text style={[
                 styles.text, 
-                isSelected ? styles.selectedText : null
+                isSelected ? styles.selectedText : null,
+                isDisabled ? styles.disabledText : null // Apply disabled text style if needed
             ]}>
                 {category.name}
             </Text>
@@ -56,6 +66,11 @@ const styles = StyleSheet.create({
     selectedButton: {
         backgroundColor: colors.color_primary,
     },
+    disabledButton: {
+        backgroundColor: colors.color_light_gray, // Adjust color for disabled state
+        borderColor: colors.color_gray, // Optional: Adjust border color for disabled state
+        opacity: 0.5, // Optional: Adjust opacity to indicate disabled state
+    },
     text: {
         color: colors.color_primary,
         fontSize: 14,
@@ -65,6 +80,9 @@ const styles = StyleSheet.create({
     selectedText: {
         color: colors.color_white,
         fontFamily: "Mulish-Medium",
+    },
+    disabledText: {
+        color: colors.color_gray, 
     },
     icon: {
         flex: 1,

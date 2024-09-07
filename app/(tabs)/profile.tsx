@@ -9,7 +9,8 @@ import UploadImage from '@/components/UploadImage';
 import { colors } from '@/styles/colores';
 import { showTopMessage } from "@/utils/ErrorHandler";
 import { useRouter } from 'expo-router';
-import useAuth from '@/hooks/useAuth'
+import useAuthStore from '@/hooks/useAuth';
+
 
 interface UserProfileScreenProps {
   navigation: NavigationProp<any>;
@@ -19,9 +20,7 @@ const UserProfileScreen: React.FC<UserProfileScreenProps> = () => {
   const [userInfo, setUserInfo] = useState<any>(null);
   const router = useRouter();
   const auth = getAuth(app);
-  const { token,user} = useAuth()
-  console.log('from perfil',user)
-    // console.log(token)
+  const { logout,token} = useAuthStore()
   useEffect(() => {
     const currentUser = auth.currentUser;
   
@@ -41,6 +40,7 @@ const UserProfileScreen: React.FC<UserProfileScreenProps> = () => {
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
+        logout()
         showTopMessage('Session ended', 'success');
         goToLogin();
       })
@@ -67,7 +67,7 @@ const UserProfileScreen: React.FC<UserProfileScreenProps> = () => {
              Welcome!!
             </Text>
             <Text style={styles.desc}>
-              {userInfo ? userInfo.email : 'Loading...'}
+              {userInfo ? userInfo.email : 'Anonymous'}
             </Text>
           </View>
           <UploadImage />
@@ -79,10 +79,18 @@ const UserProfileScreen: React.FC<UserProfileScreenProps> = () => {
 
         <View style={styles.logo_container}>
           <Text style={styles.logo_text}>SwiftBooker</Text>
+          {!!token ?(
           <TouchableOpacity style={styles.logout_container} onPress={handleSignOut}>
             <Text style={styles.text}>Log Out</Text>
             <Feather style={styles.icon} name="log-out" size={24} color="black" />
           </TouchableOpacity>
+
+          ) : (
+            <TouchableOpacity style={styles.logout_container} onPress={handleSignOut}>
+            <Text style={styles.text}>Log in</Text>
+            <Feather style={styles.icon} name="log-out" size={24} color="black" />
+          </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>

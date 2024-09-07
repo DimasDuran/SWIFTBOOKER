@@ -35,6 +35,17 @@ export default {
 
         }
     }),
+    blueaway: StyleSheet.create({
+        ...style_base,
+        container: {
+            ...style_base.container,
+            backgroundColor:colors.colo_blue,
+        }, text : {
+            ...style_base.text,
+            color: colors.color_white,
+
+        }
+    }),
 
     secondary: StyleSheet.create({
         ...style_base,
