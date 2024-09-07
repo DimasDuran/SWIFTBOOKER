@@ -226,13 +226,7 @@ export default function ServiceBookingScreen() {
         <View style={styles.out_container}>
 
             {showAnimation ? (
-            <View style={{flex:1,marginBottom:'60%'}}>
                 <AnimationClown/>
-                <Text style={styles.successMessage}>Successfully scheduled! 🎉</Text>
-                <Text style={styles.subMessage}>Your appointment has been scheduled correctly.</Text>
-
-              
-            </View>
             ):(
              <>
                <ScrollView
@@ -339,6 +333,8 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         marginTop: 48,
         paddingHorizontal: 24,
+        backgroundColor:'white',
+        flex:1
     },
     header_container: {
         flexDirection: "row",
@@ -415,22 +411,7 @@ const styles = StyleSheet.create({
         color: colors.color_primary,
         justifyContent: "center",
     },
-    messageContainer: {
-        marginTop: 20, // Separación entre la animación y el texto
-        alignItems: 'center', // Centrar el texto horizontalmente
-      },
-      successMessage: {
-        fontSize: 18, // Tamaño de texto ajustado
-        fontWeight: 'bold',
-        color: 'green',
-        textAlign: 'center',
-      },
-      subMessage: {
-        fontSize: 16,
-        color: 'gray',
-        textAlign: 'center',
-        marginBottom: 20,
-      },
+
       button: {
         marginTop: 20, // Separación entre el texto y el botón
       },

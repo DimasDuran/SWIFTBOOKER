@@ -34,7 +34,7 @@ const ServiceDetailScreen: React.FC = () => {
   const { item } = useGlobalSearchParams();
   const serviceItem: ServiceItem = JSON.parse(item as string);
 
-
+  
 
   const shareContent = async () => {
     try {
@@ -63,6 +63,9 @@ const ServiceDetailScreen: React.FC = () => {
       </View>
     );
   }
+  const test = userImages[serviceItem.id]
+  console.log('Esto contiene test =====')
+  console.log(test)
  
   return (
     <View style={styles.out_container}>

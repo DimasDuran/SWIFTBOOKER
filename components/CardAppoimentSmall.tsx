@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '@/styles/colores';
 
 interface ServiceInfo {
@@ -15,13 +15,15 @@ interface Appointment {
 
 interface CardAppointmentSmallProps {
     appointment: Appointment;
-    serviceInfo: ServiceInfo;
+    serviceInfo?: ServiceInfo; // Optional serviceInfo
     onPress: () => void; 
 }
 
 const CardAppointmentSmall: React.FC<CardAppointmentSmallProps> = (props) => {
     const { appType, bookedDate, bookedTime } = props.appointment;
-    const fullName = `${props.serviceInfo.firstName} ${props.serviceInfo.lastName}`;
+    const fullName = props.serviceInfo
+        ? `${props.serviceInfo.firstName} ${props.serviceInfo.lastName}`
+        : 'Service Provider'; // Fallback when serviceInfo is undefined
 
     const formattedDate = new Date(bookedDate);
     const day = formattedDate.getDate();
@@ -55,12 +57,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         elevation: 6,
     },
-
     info_container: {
         flex: 1,
         justifyContent: "center",
     },
-
     appType: {
         fontFamily: "Mulish-Medium",
         fontSize: 14,

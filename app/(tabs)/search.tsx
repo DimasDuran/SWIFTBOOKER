@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { View, FlatList, StyleSheet, ActivityIndicator } from "react-native";
 import CardMedium from "@/components/CardMedium";
-import SearchBar from "@/components/SearcBar"; // Corregido el nombre del componente
+import SearchBar from "@/components/SearcBar"; 
 import { getDatabase, ref, child, get } from "firebase/database";
 import { colors, sizes } from "@/styles/Theme";
 import categories from "@/utils/categories";
@@ -14,12 +14,9 @@ import { useRouter, useGlobalSearchParams } from "expo-router";
 
 export default function SearchScreen() {
     const {
-        serviceList,
         filteredServiceList,
         selectedCategory,
         setServiceList,
-        setFilteredServiceList,
-        setSelectedCategory,
         filterByCategory,
         searchServices,
         resetFilters
@@ -63,20 +60,16 @@ export default function SearchScreen() {
     };
 
     const renderService = ({ item }) => {
-        console.log(item.id)
-        const imageSource = userImages[item.id] ? userImages[item.id] : require("@/assets/user-profile.png");
-
-        return(
+        const imageUri = userImages[item.id] || ''; 
+        return (
             <CardMedium
-            image_source={imageSource}
-            service={item}
-            key={item.id}
-            onSelect={() => handleServiceSelect(item)}
-            
-        />
-        )
+                image_source={imageUri}
+                service={item}
+                key={item.id}
+                onSelect={() => handleServiceSelect(item)}
+            />
+        );
     }
-
     const renderCategory = ({ item }) => (
         <Category
             category={item}

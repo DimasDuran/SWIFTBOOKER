@@ -18,7 +18,6 @@ export default function CalendarScreen() {
     const auth = getAuth();
     const user = auth.currentUser;
     const { appointmentList, loading, fetchAppointments, removeAppointment } = useCalendarStore();
-    const [showAnimation, setShowAnimation] = useState(false);
 
     useEffect(() => {
         configureNotifications();

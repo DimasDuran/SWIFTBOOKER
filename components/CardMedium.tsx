@@ -19,19 +19,20 @@ interface CardMediumProps {
         district: string;
         skills: string[];
     };
-    image_source: string;
+    image_source: number;
     onSelect: (event: GestureResponderEvent) => void;
 }
-
-
 
 const CardMedium: React.FC<CardMediumProps> = ({ service, image_source, onSelect }) => {
     return (
         <TouchableWithoutFeedback onPress={onSelect}>
             <View style={styles.container}>
                 <View style={styles.infoContainer}>
-                    <Image source={{ uri: image_source }} style={styles.image}
-                        onError={() => console.log('Error loading image')}                    />
+                    <Image 
+                        source={ image_source } 
+                        style={styles.image} 
+                        onError={() => console.log('Error loading image')}
+                    />
                     <View style={styles.textContainer}>
                         <View style={styles.titleContainer}>
                             <Text style={styles.title}>
@@ -41,7 +42,6 @@ const CardMedium: React.FC<CardMediumProps> = ({ service, image_source, onSelect
                                 {service.expert_area}
                             </Text>
                         </View>
-
                         <View style={styles.locationContainer}>
                             <Ionicons
                                 name="images-outline"

@@ -20,13 +20,18 @@ import CardAppointmentSmall from '@/components/CardAppoimentSmall';
 import CardCarousel from '@/components/CardCarousel';
 import categories from "@/utils/categories";
 import Category from '@/components/Category';
+import { useNotificationsStore } from '@/hooks/useNotificationsStore';
 
 export default function Index() {
   const [appointmentList, setAppointmentList] = useState<any[]>([]);
   const [isReady, setIsReady] = useState<boolean>(false);
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const notificationsCount = useNotificationsStore((state) => state.count);
   const { token,uid,email } = useAuth();
   const router = useRouter();
+  console.log('========>',notificationsCount)
+
 
   useEffect(() => {
     if (email && uid) {
@@ -70,12 +75,12 @@ export default function Index() {
   }, [email, uid]);
 
   const handleSearch = () => {
-    // router.replace("SearchScreen");
+    router.replace("/(tabs)/search");
   };
 
   const handleCategorySelect = (selectedCategory: string) => {
     setSelectedCategory(selectedCategory);
-    // router.replace("SearchScreen", { category: selectedCategory });
+    router.replace("/(tabs)/search", { category: selectedCategory });
   };
 
   //NAVIGATION
@@ -85,11 +90,9 @@ export default function Index() {
 
   //NAVIGATION
   function goToNotifications() {
-    // router.replace("NotificationsScreen");
+    router.replace("/stack/NotificationsScreen");
   }
 
-  console.log(appointmentList);
-  console.log(email);
 
   return (
     <ScrollView>
@@ -104,6 +107,11 @@ export default function Index() {
                 style={styles.icon}
                 onPress={goToNotifications}
               />
+              {notificationsCount > 0 && (
+            <View style={styles.notification_badge}>
+              <Text style={styles.notification_badge_text}>{notificationsCount}</Text>
+            </View>
+          )}
             </View>
             <ImageBackground
               style={styles.card_container}
@@ -264,4 +272,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     height: "100%",
   },
+  notification_badge: {
+    position: 'absolute',
+    top: -5,
+    right: -10,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notification_badge_text: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+
 });
