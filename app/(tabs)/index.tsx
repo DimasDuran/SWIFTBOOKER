@@ -1,70 +1,292 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  ImageBackground,
+} from 'react-native';
+import { ref, onValue, getDatabase } from 'firebase/database';
+import parseContentData from '@/utils/parseContentData';
+import { sortAppointmentsByDateAndTime } from '@/utils/calendarUtils';
+import useAuth from '@/hooks/useAuth';
+import fetchServiceInfo from '@/utils/fetchServiceInfo';
+import { colors } from '@/styles/colores';
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from 'expo-router';
+import SearchBar from "@/components/SearcBar";
+import CardAppointmentSmall from '@/components/CardAppoimentSmall';
+import CardCarousel from '@/components/CardCarousel';
+import categories from "@/utils/categories";
+import Category from '@/components/Category';
+import { useNotificationsStore } from '@/hooks/useNotificationsStore';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function Index() {
+  const [appointmentList, setAppointmentList] = useState<any[]>([]);
+  const [isReady, setIsReady] = useState<boolean>(false);
 
-export default function HomeScreen() {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const notificationsCount = useNotificationsStore((state) => state.count);
+  const { token,uid,email } = useAuth();
+  const router = useRouter();
+  console.log('========>',notificationsCount)
+
+
+  useEffect(() => {
+    if (email && uid) {
+      const dbRef = ref(getDatabase(), 'userAppointments/' + uid);
+
+      const unsubscribe = onValue(dbRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const getList = parseContentData(snapshot.val());
+
+          const servicePromises = getList.map((appointment) =>
+            fetchServiceInfo(appointment.serviceId)
+          );
+
+          Promise.all(servicePromises)
+            .then((serviceInfos) => {
+              const updateAppointmentList = getList.map((appointment, index) => ({
+                ...appointment,
+                serviceInfo: serviceInfos[index],
+                bookedDate: appointment.bookedDate || '', 
+                bookedTime: appointment.bookedTime || '', 
+              }));
+
+              setAppointmentList(
+                sortAppointmentsByDateAndTime(updateAppointmentList)
+              );
+              setIsReady(true);
+            });
+        } else {
+          setAppointmentList([]);
+          setIsReady(true);
+        }
+      });
+
+      return () => unsubscribe();
+    } else {
+      setAppointmentList([]);
+      setTimeout(() => {
+        setIsReady(true);
+      }, 2000);
+    }
+  }, [email, uid]);
+
+  const handleSearch = () => {
+    router.replace("/(tabs)/search");
+  };
+
+  const handleCategorySelect = (selectedCategory: string) => {
+    setSelectedCategory(selectedCategory);
+    router.replace("/(tabs)/search", { category: selectedCategory });
+  };
+
+  //NAVIGATION
+  function goToCalendar() {
+    // router.replace("CalendarScreen");
+  }
+
+  //NAVIGATION
+  function goToNotifications() {
+    router.replace("/stack/NotificationsScreen");
+  }
+
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ScrollView>
+      {isReady ? (
+        <View style={styles.container}>
+          <View style={styles.top_container}>
+            <View style={styles.header_container}>
+              <Text style={styles.header_text}>SwiftBooker</Text>
+              <Feather
+                name="bell"
+                size={24}
+                style={styles.icon}
+                onPress={goToNotifications}
+              />
+              {notificationsCount > 0 && (
+            <View style={styles.notification_badge}>
+              <Text style={styles.notification_badge_text}>{notificationsCount}</Text>
+            </View>
+          )}
+            </View>
+            <ImageBackground
+              style={styles.card_container}
+              imageStyle={{ borderRadius: 20, overflow: "hidden" }}
+              source={require("@/assets/backgroundsearch.png")}
+            >
+              <View style={styles.welcome_container}>
+                <Text style={styles.welcome_text}>
+                  Welcome
+                </Text>
+                <Text style={styles.welcome_text_bold}>
+    {email ? email.split('@')[0] : ''}
+                </Text>
+              </View>
+              <Text style={styles.detail_text}>
+                Let's plan your weekly schedule together
+              </Text>
+              <View style={styles.search_container}>
+                <SearchBar
+                  placeholder_text={"Search Service"}
+                  onSearch={handleSearch}
+                />
+              </View>
+            </ImageBackground>
+          </View>
+          <View style={styles.app_container}>
+            <Text style={styles.text}>For You</Text>
+            <View>
+              <CardCarousel
+                list={categories}
+                onSelectCategory={handleCategorySelect}
+              />
+            </View>
+
+            {appointmentList.length === 0 ? (
+              ""
+            ) : (
+              <View>
+                <Text style={styles.text}>
+                  Upcoming Appointments
+                </Text>
+                <View style={styles.list_container}>
+                  {appointmentList
+                    .slice(0, 2)
+                    .map((appointment) => (
+                      <CardAppointmentSmall
+                        appointment={appointment}
+                        serviceInfo={appointment.serviceInfo}
+                        key={appointment.id}
+                        onPress={goToCalendar}
+                      />
+                    ))}
+                </View>
+              </View>
+            )}
+            <Text style={styles.text}>All Services</Text>
+            <View style={styles.category_container}>
+              {categories.map((category) => (
+                <Category
+                  category={category}
+                  key={category.name}
+                  isSelected={selectedCategory === category.name}
+                  onPress={() => handleCategorySelect(category.name)}
+                />
+              ))}
+            </View>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.loading_container}>
+          <ActivityIndicator
+            size="large"
+            color={colors.color_primary}
+          />
+        </View>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    marginTop: 48,
+    marginBottom: 120,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  top_container: {
+    paddingHorizontal: 24,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  card_container: {
+    marginVertical: 16,
+    padding: 16,
+  },
+  header_container: {
+    marginVertical: 16,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  welcome_container: {
+    marginTop: 8,
+    marginBottom: 64,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  search_container: {
+    flex: 1,
+    paddingBottom: 8,
+  },
+  app_container: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  list_container: {
+    flex: 1,
+    marginVertical: 8,
+  },
+  category_container: {
+    marginVertical: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  header_text: {
+    fontSize: 34,
+    fontFamily: "Mulish-Medium",
+    color: colors.color_primary,
+    flex: 1,
+  },
+  welcome_text: {
+    paddingHorizontal: 8,
+    fontSize: 24,
+    color: colors.color_white,
+    fontFamily: "Mulish-Medium",
+  },
+  text: {
+    flex: 1,
+    fontSize: 18,
+    fontFamily: "Mulish-Medium",
+  },
+  detail_text: {
+    flex: 1,
+    flexWrap: "wrap",
+    fontSize: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    color: colors.color_white,
+    fontFamily: "Mulish-Medium",
+  },
+  welcome_text_bold: {
+    color: colors.color_white,
+    fontSize: 24,
+    fontFamily: "Mulish-Bold",
+  },
+  icon: {
+    color: '#6A5ACD',
+  },
+  loading_container: {
+    alignContent: "center",
+    justifyContent: "center",
+    height: "100%",
+  },
+  notification_badge: {
     position: 'absolute',
+    top: -5,
+    right: -10,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  notification_badge_text: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+
 });
