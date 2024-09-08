@@ -22,7 +22,7 @@ interface CardAppointmentSmallProps {
 const CardAppointmentSmall: React.FC<CardAppointmentSmallProps> = (props) => {
     const { appType, bookedDate, bookedTime } = props.appointment;
     const fullName = props.serviceInfo
-        ? `${props.serviceInfo.firstName} ${props.serviceInfo.lastName}`
+        ? `${props.serviceInfo.firstName}`
         : 'Service Provider'; // Fallback when serviceInfo is undefined
 
     const formattedDate = new Date(bookedDate);
@@ -33,7 +33,7 @@ const CardAppointmentSmall: React.FC<CardAppointmentSmallProps> = (props) => {
         <TouchableOpacity onPress={props.onPress}>
             <View style={styles.container}>
                 <View style={styles.info_container}>
-                    <Text style={styles.appType}>{appType}, {fullName}</Text>
+                    <Text style={styles.appType}>{appType}</Text>
                     <Text style={styles.time}>{bookedTime}, {day} {month}</Text>
                 </View>
             </View>
