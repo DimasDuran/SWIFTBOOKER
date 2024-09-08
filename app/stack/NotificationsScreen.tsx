@@ -9,30 +9,29 @@ import {
 import { colors } from "@/styles/colores";
 import CardAppointmentSmall from "@/components/CardAppoimentSmall";
 import { useCalendarStore } from "@/hooks/useCalendarStore";
-import useAuth from "@/hooks/useAuth";
 import { useNotificationsStore } from "@/hooks/useNotificationsStore";
+import { loadNotifications } from "@/utils/notificationsHelper"; 
 
 const NotificationsScreen: React.FC = () => {
     const { appointmentList } = useCalendarStore();
     const [isReady, setIsReady] = useState(false);
     const setCount = useNotificationsStore((state) => state.setCount);
-    const Count = useNotificationsStore((state) => state.count);
-
 
     useEffect(() => {
-        // Simulating loading behavior
-        setTimeout(() => {
-            setIsReady(true);
-            // Update the notifications count
-            setCount(appointmentList.length);
-        }, 2000);
-    }, [appointmentList, Count]); // Dependency on appointmentList
+        loadNotifications(appointmentList, setIsReady, setCount);
+
+        return() =>{
+            setCount(0),
+            setIsReady(false)
+        }
+    }, [appointmentList,setCount]); 
 
     function goToCalendar() {
-       
+        // Lógica de navegación aquí
     }
 
-    console.log(appointmentList);
+    console.log('list',appointmentList)
+
     return (
         <ScrollView>
             {isReady ? (
@@ -47,7 +46,7 @@ const NotificationsScreen: React.FC = () => {
                                     {appointmentList.slice(0, 2).map((appointment) => (
                                         <CardAppointmentSmall
                                             appointment={appointment}
-                                            serviceInfo={appointment.serviceInfo} // This might be undefined
+                                            serviceInfo={appointment.serviceInfo} 
                                             key={appointment.id}
                                             onPress={goToCalendar}
                                         />

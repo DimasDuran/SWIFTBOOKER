@@ -23,7 +23,7 @@ const initialFormValues: LoginFormValues = {
 };
 
 const LoginScreen: React.FC = () => {
-  const { login, googleLogin, isLoading, error } = useAuthStore();
+  const { login, googleLogin, isLoading, error} = useAuthStore();
   const router = useRouter();
   
   // Configuración de Google Auth
@@ -67,7 +67,7 @@ const LoginScreen: React.FC = () => {
   };
 
   const goToMemberSignUp = () => {
-    router.push("/stack/SignUpScreen");
+    router.replace('/stack/SignUpScreen')
   };
 
   return (

@@ -44,7 +44,7 @@ const CardMedium: React.FC<CardMediumProps> = ({ service, image_source, onSelect
                         </View>
                         <View style={styles.locationContainer}>
                             <Ionicons
-                                name="images-outline"
+                                name="location-outline"
                                 size={18}
                                 color={colors.color_primary}
                             />

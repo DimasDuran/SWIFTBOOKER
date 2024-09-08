@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   ImageBackground,
   Modal,
-  Button,
   TouchableOpacity,
 } from 'react-native';
 import { ref, onValue, getDatabase } from 'firebase/database';
@@ -17,13 +16,15 @@ import useAuthStore from "@/hooks/useAuth";
 import fetchServiceInfo from '@/utils/fetchServiceInfo';
 import { colors } from '@/styles/colores';
 import { Feather } from "@expo/vector-icons";
-import { useRouter,router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import SearchBar from "@/components/SearcBar";
 import CardAppointmentSmall from '@/components/CardAppoimentSmall';
 import CardCarousel from '@/components/CardCarousel';
 import categories from "@/utils/categories";
 import Category from '@/components/Category';
 import { useNotificationsStore } from '@/hooks/useNotificationsStore';
+import { loadNotifications } from "@/utils/notificationsHelper";
+import { useCalendarStore } from '@/hooks/useCalendarStore';
 
 export default function Index() {
   const [appointmentList, setAppointmentList] = useState<any[]>([]);
@@ -31,9 +32,11 @@ export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const notificationsCount = useNotificationsStore((state) => state.count);
-  const { token,uid,user } = useAuthStore();
-  
+  const { token, uid, user } = useAuthStore();
+  const appoimentItm = useCalendarStore((state) => state.appointmentList);
   const router = useRouter();
+  const setCount = useNotificationsStore((state) => state.setCount);
+
   useEffect(() => {
     if (token && uid) {
       const dbRef = ref(getDatabase(), 'userAppointments/' + uid);
@@ -51,18 +54,18 @@ export default function Index() {
               const updateAppointmentList = getList.map((appointment, index) => ({
                 ...appointment,
                 serviceInfo: serviceInfos[index],
-                bookedDate: appointment.bookedDate || '', 
-                bookedTime: appointment.bookedTime || '', 
+                bookedDate: appointment.bookedDate || '',
+                bookedTime: appointment.bookedTime || '',
               }));
 
               setAppointmentList(
                 sortAppointmentsByDateAndTime(updateAppointmentList)
               );
-              setIsReady(true);
-            });
+            })
+            .finally(() => setIsReady(true));
         } else {
           setAppointmentList([]);
-          setIsReady(true);
+          setIsReady(true); // Marca como listo incluso si no hay citas
         }
       });
 
@@ -81,35 +84,40 @@ export default function Index() {
     }
   }, [token]);
 
-  const handleSearch = () => {
-   
-  };
-
-  const goToSearch = () =>{
-    if (!!token) {
-      router.replace('/(tabs)/search')
-      
-    }else{
-      return
+  useEffect(() => {
+    if (appointmentList.length > 0) {
+      loadNotifications(appointmentList, setIsReady, setCount);
     }
-  }
+    return () => {
+      setCount(0);
+      setIsReady(false);
+    };
+  }, [appointmentList, setCount]);
+
+  const handleSearch = () => {};
+
+  const goToSearch = () => {
+    if (!!token) {
+      router.replace('/(tabs)/search');
+    } else {
+      return;
+    }
+  };
 
   const handleCategorySelect = (selectedCategory: string) => {
     setSelectedCategory(selectedCategory);
     router.replace(`/search?category=${encodeURIComponent(selectedCategory)}`);
   };
 
-  function goToCalendar() {
-    // router.replace("CalendarScreen");
-  }
-
-  function goToNotifications() {
+  const goToCalendar = () => {};
+  
+  const goToNotifications = () => {
     router.replace("/stack/NotificationsScreen");
-  }
+  };
 
   const closeModal = () => {
     setIsModalVisible(false);
-    router.replace('/(tabs)/profile')
+    router.replace('/(tabs)/profile');
   };
 
   return (
@@ -125,9 +133,9 @@ export default function Index() {
                 style={styles.icon}
                 onPress={goToNotifications}
               />
-              {notificationsCount > 0 && (
+              {appointmentList.length > 0 && (
                 <View style={styles.notification_badge}>
-                  <Text style={styles.notification_badge_text}>{notificationsCount}</Text>
+                  <Text style={styles.notification_badge_text}>{appointmentList.length}</Text>
                 </View>
               )}
             </View>
@@ -157,30 +165,28 @@ export default function Index() {
           </View>
           <View style={styles.app_container}>
             <Text style={styles.text}>For You</Text>
-            <View>
-              <CardCarousel
-                token={!token}
-                list={categories}
-                onSelectCategory={handleCategorySelect}
-              />
-            </View>
+            <CardCarousel
+              token={!token}
+              list={categories}
+              onSelectCategory={handleCategorySelect}
+            />
 
             {appointmentList.length === 0 ? (
-              ""
+              <Text style={styles.no_appointments_text}>
+                No upcoming appointments
+              </Text>
             ) : (
               <View>
                 <Text style={styles.text}>Upcoming Appointments</Text>
                 <View style={styles.list_container}>
-                  {appointmentList
-                    .slice(0, 2)
-                    .map((appointment) => (
-                      <CardAppointmentSmall
-                        appointment={appointment}
-                        serviceInfo={appointment.serviceInfo}
-                        key={appointment.id}
-                        onPress={goToCalendar}
-                      />
-                    ))}
+                  {appointmentList.slice(0, 2).map((appointment) => (
+                    <CardAppointmentSmall
+                      appointment={appointment}
+                      serviceInfo={appointment.serviceInfo}
+                      key={appointment.id}
+                      onPress={goToCalendar}
+                    />
+                  ))}
                 </View>
               </View>
             )}
@@ -200,10 +206,7 @@ export default function Index() {
         </View>
       ) : (
         <View style={styles.loading_container}>
-          <ActivityIndicator
-            size="large"
-            color={colors.color_primary}
-          />
+          <ActivityIndicator size="large" color={colors.color_primary} />
         </View>
       )}
       <Modal
@@ -214,12 +217,10 @@ export default function Index() {
       >
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalText}>
-              You need to log in to make an appointment.
-            </Text>
+            <Text style={styles.modalText}>You need to log in to make an appointment.</Text>
             <TouchableOpacity style={styles.button} onPress={closeModal}>
-  <Text style={styles.buttonText}>Go</Text>
-</TouchableOpacity>
+              <Text style={styles.buttonText}>Go</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
