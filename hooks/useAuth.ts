@@ -1,7 +1,10 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
+import * as WebBrowser from "expo-web-browser";
+
+WebBrowser.maybeCompleteAuthSession();
 
 interface AuthState {
   user: any | null;
@@ -9,9 +12,10 @@ interface AuthState {
   uid: string | null;
   isLoading: boolean;
   error: string | null;
-
   login: (email: string, password: string) => Promise<void>;
+  googleLogin: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
+  loadAuthData: () => Promise<void>;
 }
 
 const saveAuthDataToAsyncStorage = async (token: string, uid: string) => {
@@ -22,18 +26,6 @@ const saveAuthDataToAsyncStorage = async (token: string, uid: string) => {
     ]);
   } catch (error) {
     console.error('Error saving auth data to AsyncStorage:', error);
-  }
-};
-
-const getAuthDataFromAsyncStorage = async (): Promise<{ token: string | null; uid: string | null }> => {
-  try {
-    const values = await AsyncStorage.multiGet(['authToken', 'authUid']);
-    const token = values[0][1];
-    const uid = values[1][1];
-    return { token, uid };
-  } catch (error) {
-    console.error('Error getting auth data from AsyncStorage:', error);
-    return { token: null, uid: null };
   }
 };
 
@@ -59,7 +51,6 @@ const useAuthStore = create<AuthState>((set) => ({
       const token = await userCredential.user.getIdToken();
       const uid = userCredential.user.uid;
       
-      // Guardar token y uid en AsyncStorage
       await saveAuthDataToAsyncStorage(token, uid);
       
       set({
@@ -73,22 +64,60 @@ const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
+  googleLogin: async (idToken: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const credential = GoogleAuthProvider.credential(idToken);
+      const userCredential = await signInWithCredential(auth, credential);
+      const token = await userCredential.user.getIdToken();
+      const uid = userCredential.user.uid;
+
+      await saveAuthDataToAsyncStorage(token, uid);
+
+      set({
+        user: userCredential.user,
+        token,
+        uid,
+        isLoading: false,
+      });
+    } catch (error: any) {
+      set({ error: error.message, isLoading: false });
+    }
+  },
+
   logout: async () => {
+    set({ isLoading: true });
     try {
       await signOut(auth);
       await removeAuthDataFromAsyncStorage();
-      set({ user: null, token: null, uid: null });
+      set({ user: null, token: null, uid: null, isLoading: false });
     } catch (error: any) {
       console.error("Logout failed: ", error.message);
+      set({ isLoading: false });
+    }
+  },
+
+  // Nueva función para cargar los datos almacenados
+  loadAuthData: async () => {
+    set({ isLoading: true });
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const uid = await AsyncStorage.getItem('authUid');
+      
+      if (token && uid) {
+        set({
+          token,
+          uid,
+          isLoading: false,
+        });
+      } else {
+        set({ isLoading: false });
+      }
+    } catch (error: any) {
+      console.error('Failed to load auth data:', error);
+      set({ isLoading: false, error: error.message });
     }
   },
 }));
-
-(async () => {
-  const { token, uid } = await getAuthDataFromAsyncStorage();
-  if (token && uid) {
-    useAuthStore.setState({ token, uid });
-  }
-})();
 
 export default useAuthStore;

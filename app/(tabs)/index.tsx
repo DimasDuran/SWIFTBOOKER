@@ -31,8 +31,7 @@ export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const notificationsCount = useNotificationsStore((state) => state.count);
-  const { token,uid,email, } = useAuthStore();
-
+  const { token,uid,user } = useAuthStore();
   
   const router = useRouter();
   useEffect(() => {
@@ -74,7 +73,7 @@ export default function Index() {
         setIsReady(true);
       }, 2000);
     }
-  }, [email, uid]);
+  }, [user?.email, uid]);
 
   useEffect(() => {
     if (!token) {
@@ -140,7 +139,7 @@ export default function Index() {
               <View style={styles.welcome_container}>
                 <Text style={styles.welcome_text}>Welcome</Text>
                 <Text style={styles.welcome_text_bold}>
-                  {email ? email.split('@')[0] : ''}
+                  {user?.email ? user?.email.split('@')[0] : '' || user?.displayName}
                 </Text>
               </View>
               <Text style={styles.detail_text}>
