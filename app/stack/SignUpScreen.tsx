@@ -24,7 +24,7 @@ const initialFormValues: SignUpFormValues = {
 const SignUpScreen: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const router = useRouter();
-    const { getToken } = useAuth(); // use getToken from the hook
+    const { token } = useAuth(); // use getToken from the hook
 
     const handleFormSubmit = async (
         formValues: SignUpFormValues,
@@ -55,10 +55,10 @@ const SignUpScreen: React.FC = () => {
             showTopMessage("Registration successful!", "success");
 
             // Optionally use getToken here if needed
-            const storedToken = await getToken();
+            const storedToken = token
             console.log("Stored Token:", storedToken);
 
-            router.replace('/profile');
+            router.replace('/stack/LoginScreen');
         } catch (err: any) {
             showTopMessage(ErrorHandler(err.code), "danger");
         } finally {
@@ -95,7 +95,7 @@ const SignUpScreen: React.FC = () => {
                             </View>
                             <View style={styles.button_container}>
                                 <Button
-                                    text="Send"
+                                    text="Register"
                                     onPress={handleSubmit}
                                     loading={loading}
                                 />

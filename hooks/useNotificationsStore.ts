@@ -9,3 +9,5 @@ export const useNotificationsStore = create<NotificationState>((set) => ({
   count: 0,
   setCount: (count) => set({ count }),
 }));
+
+

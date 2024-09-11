@@ -21,7 +21,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ placeholder_text, onSearch,onPres
   const handleSearchBlur = () => {
     setSearchFocused(false);
   };
-console.log('Valor',token)
   return (
     <View style={styles.container}>
       <Feather

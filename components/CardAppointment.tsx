@@ -44,9 +44,9 @@ export default function CardAppointment({
                 </View>
                 <View style={styles.info_container}>
                     <Text style={styles.appType}>
-                        {appType}, {fullName}
+                       Service : {appType}
                     </Text>
-                    <Text style={styles.time}>{bookedTime}</Text>
+                    <Text style={styles.time}>Hour :{bookedTime}</Text>
                 </View>
                 <TouchableOpacity style={styles.icon_container}>
                     <Menu>

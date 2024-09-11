@@ -47,6 +47,7 @@ export default function CalendarScreen() {
             ]
         );
     };
+console.log({appointmentList});
 
     return (
         <ScrollView style={styles.container}>

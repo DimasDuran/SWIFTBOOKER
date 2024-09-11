@@ -20,21 +20,32 @@ const UserProfileScreen: React.FC<UserProfileScreenProps> = () => {
   const [userInfo, setUserInfo] = useState<any>(null);
   const router = useRouter();
   const auth = getAuth(app);
-  const { logout,token} = useAuthStore()
+  const { logout,token,user} = useAuthStore()
+
   useEffect(() => {
-    const currentUser = auth.currentUser;
-  
-    if (currentUser) {
-      const displayName = currentUser.displayName || '';
-       console.log(displayName)
+    // Si el estado de 'user' está disponible en el hook, usarlo
+    // If state user is avalible over hook used
+    if (user) {
       setUserInfo({
-        id: currentUser.uid,
-        email: currentUser.email || 'example@example.com',
+        id: user.uid,
+        email: user.email || 'example@example.com',
+        displayName: user.displayName || 'Anonymous',
       });
     } else {
-      console.log('No user is currently logged in.');
+      // Si no, usa el estado de auth
+      // If not, You should used the auth state.
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        setUserInfo({
+          id: currentUser.uid,
+          email: currentUser.email || 'example@example.com',
+          displayName: currentUser.displayName || 'Anonymous',
+        });
+      } else {
+        console.log('No user is currently logged in.');
+      }
     }
-  }, [auth]);
+  }, [user, auth]);
   
   // Sign out user
   const handleSignOut = () => {
@@ -56,6 +67,7 @@ const UserProfileScreen: React.FC<UserProfileScreenProps> = () => {
     router.replace('/');
   };
 
+
   return (
     <View style={styles.container}>
       <Text style={styles.header_text}>Profile</Text>
@@ -67,11 +79,11 @@ const UserProfileScreen: React.FC<UserProfileScreenProps> = () => {
              Welcome!!
             </Text>
             <Text style={styles.desc}>
-              {userInfo ? userInfo.email : 'Anonymous'}
+            {userInfo?.displayName || userInfo?.email || 'Anonymous'}
             </Text>
           </View>
-          <UploadImage />
-        </View>
+          <UploadImage imageUrl={user?.photoURL || userInfo?.photoURL || null} />
+          </View>
 
         <CardSmall iconName="user" text="Account Information" onSelect={() => console.log('')} />
         <CardSmall onSelect={goToBookingHistory} iconName="list" text="Past Appointments" />

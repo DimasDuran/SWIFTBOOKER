@@ -9,10 +9,13 @@ import { MenuProvider } from "react-native-popup-menu";
 import { useColorScheme } from '@/hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import IntroScreens from '@/app/stack/IntroScreens';
+import useAuthStore from '@/hooks/useAuth';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const loadAuthData = useAuthStore((state) => state.loadAuthData);
+
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -33,7 +36,7 @@ export default function RootLayout() {
         console.error("Error checking first launch", error);
       }
     };
-
+    loadAuthData()
     checkFirstLaunch();
   }, []);
 
